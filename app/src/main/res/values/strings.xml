@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">qr-code-scanner</string>
+    <string name="take_picture">decode qr code</string>
+</resources>

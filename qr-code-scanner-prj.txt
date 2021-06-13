@@ -1,0 +1,40 @@
+qr code scanner project
+
+https://aishack.in/tutorials/scanning-qr-codes-1/
+https://www.matchadesign.com/news/blog/qr-code-demystified-part-1
+https://www.matchadesign.com/news/blog/qr-code-demystified-part-2
+https://www.matchadesign.com/news/blog/qr-code-demystified-part-3
+https://www.matchadesign.com/news/blog/qr-code-demystified-part-4/
+
+https://www.thonky.com/qr-code-tutorial/error-correction-coding
+https://www.youtube.com/watch?v=KA8hDldvfv0
+
+// notes for the coding part (using Android Studio/Java)
+https://stackoverflow.com/questions/25660166/how-to-add-a-jar-in-external-libraries-in-android-studio
+https://github.com/Jiankai-Sun/Android-Camera2-API-Example/blob/master/app/src/main/java/com/jack/mainactivity/MainActivity.java
+https://medium.com/@gauravpandey_34933/how-to-camera2-api-in-android-576fd23650ea
+https://medium.com/android-news/the-least-you-can-do-with-camera2-api-2971c8c81b8b
+https://proandroiddev.com/understanding-camera2-api-from-callbacks-part-1-5d348de65950
+https://developer.android.com/guide/topics/media/camera
+https://developer.android.com/guide/components/activities/activity-lifecycle
+https://stackoverflow.com/questions/65861503/android-camera2-createcapturesession-deprecated
+https://stackoverflow.com/questions/67020602/clarification-on-handlers-threads-and-executors-when-using-a-camera-in-android
+https://stackoverflow.com/questions/52642246/how-to-get-executor-for-main-thread-on-api-level-28
+https://stackoverflow.com/questions/17500376/androids-activity-lifecycle-after-coming-out-of-sleep
+https://stackoverflow.com/questions/37413040/take-picture-continuously-with-autofocus-in-android
+https://stackoverflow.com/questions/41649691/android-camera2-api-touch-to-focus-example
+
+https://github.com/zxing/zxing/tree/master/core/src/main/java/com/google/zxing/qrcode
+https://zxing.github.io/zxing/apidocs/
+https://stackoverflow.com/questions/36210537/find-qr-code-in-image-and-decode-it-using-zxing
+
+https://stackoverflow.com/questions/37093723/how-to-add-an-android-studio-project-to-github
+
+// testing
+https://demo.curlythemes.com/qr/qr-codes-demo/
+
+TODO:
+- when turning the phone, how to correct view? might have to do with those LENS_xyz enums?
+- can we think of better UX? i.e. maybe a processing message after button click?
+- go to url if QR code is a url? (need permission)
+- for autofocus: only set autofocus when pressing the button to decode
