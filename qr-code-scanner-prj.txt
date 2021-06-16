@@ -23,12 +23,17 @@ https://stackoverflow.com/questions/52642246/how-to-get-executor-for-main-thread
 https://stackoverflow.com/questions/17500376/androids-activity-lifecycle-after-coming-out-of-sleep
 https://stackoverflow.com/questions/37413040/take-picture-continuously-with-autofocus-in-android
 https://stackoverflow.com/questions/41649691/android-camera2-api-touch-to-focus-example
+https://stackoverflow.com/questions/29947961/android-camera2-api-detect-when-we-have-focus
+https://github.com/googlearchive/android-Camera2Basic/blob/master/Application/src/main/java/com/example/android/camera2basic/Camera2BasicFragment.java
+https://stackoverflow.com/questions/33922670/camera2-api-autofocus-with-samsung-s5
 
 https://github.com/zxing/zxing/tree/master/core/src/main/java/com/google/zxing/qrcode
 https://zxing.github.io/zxing/apidocs/
 https://stackoverflow.com/questions/36210537/find-qr-code-in-image-and-decode-it-using-zxing
 
 https://stackoverflow.com/questions/37093723/how-to-add-an-android-studio-project-to-github
+
+https://groups.google.com/g/zxing/c/2wEs-8PtGS4 -> discussion on how to improve accuracy with ZXing
 
 // testing
 https://demo.curlythemes.com/qr/qr-codes-demo/

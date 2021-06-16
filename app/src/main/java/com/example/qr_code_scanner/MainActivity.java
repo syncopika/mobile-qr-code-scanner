@@ -18,15 +18,19 @@ import com.google.zxing.FormatException;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CaptureResult;
+import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.hardware.camera2.CameraDevice.StateCallback;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCaptureSession.CaptureCallback;
 import android.hardware.camera2.CaptureRequest.Builder;
 import android.os.Build;
 import android.os.Bundle;
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private Size cameraPreviewSize;
     private int cameraDirection;
     private CameraCaptureSession captureSession;
+    private CaptureCallback captureCallback;
     private CaptureRequest captureRequest;
     private TextureView.SurfaceTextureListener surfaceTextureListener;
     private TextureView textureView;
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     // activate the camera
     private void openCamera(){
         try {
-            Log.i(TAG, "in openCamera. checking permissions to use camera...");
+            //Log.i(TAG, "in openCamera. checking permissions to use camera...");
             if(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
                 cManager.openCamera(cameraId, stateCallback, backgroundHandler);
             }
@@ -125,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // establishes the camera's capture session so it can take pictures
-    @RequiresApi(api = Build.VERSION_CODES.P)
     private void createCameraSession(){
         try {
             SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
@@ -134,12 +138,6 @@ public class MainActivity extends AppCompatActivity {
             Surface previewSurface = new Surface(surfaceTexture);
 
             captureRequestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-
-            // turn on autofocus for the camera. set to idle first just to be safe
-            // TODO: only set autofocus when pressing the button to decode
-            captureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
-            captureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
-
             captureRequestBuilder.addTarget(previewSurface);
 
             camera.createCaptureSession(
@@ -147,15 +145,15 @@ public class MainActivity extends AppCompatActivity {
                     new CameraCaptureSession.StateCallback() {
                         @Override
                         public void onConfigured(@NonNull CameraCaptureSession session) {
-                            if(camera == null){
+                            if (camera == null) {
                                 return;
                             }
 
-                            try{
+                            try {
                                 captureRequest = captureRequestBuilder.build();
                                 MainActivity.this.captureSession = session;
                                 MainActivity.this.captureSession.setRepeatingRequest(captureRequest, null, backgroundHandler);
-                            }catch(CameraAccessException err){
+                            } catch (CameraAccessException err) {
                                 err.printStackTrace();
                             }
                         }
@@ -164,6 +162,47 @@ public class MainActivity extends AppCompatActivity {
                         public void onConfigureFailed(@NonNull CameraCaptureSession session) {}
                     },
                     backgroundHandler);
+
+        }catch(CameraAccessException err){
+            err.printStackTrace();
+        }
+    }
+
+    private void processImage(){
+        // get image and process it for the QR code
+        // textureView is holding the current image
+        Bitmap currImage = textureView.getBitmap();
+        int imageWidth = currImage.getWidth();
+        int imageHeight = currImage.getHeight();
+        int[] currImagePixels = new int[imageWidth*imageHeight]; // each element represents a color (so it's not like each element represents a color channel)
+        currImage.getPixels(currImagePixels, 0, imageWidth, 0, 0, imageWidth, imageHeight);
+
+        // zxing stuff
+        RGBLuminanceSource imgData = new RGBLuminanceSource(imageWidth, imageHeight, currImagePixels);
+        HybridBinarizer processedImg = new HybridBinarizer(imgData); // this class does some image processing to the image to make it easier to find the QR code, if present
+        BinaryBitmap imgBitmap = new BinaryBitmap(processedImg);
+        QRCodeReader reader = new QRCodeReader();
+
+        try {
+            Result qrCodeResult = reader.decode(imgBitmap);
+            String data = qrCodeResult.getText();
+
+            // TODO: add an action to the Snackbar (i.e. option to open the link (need permission))
+            Snackbar.make(textureView, data, Snackbar.LENGTH_SHORT).show();
+
+        }catch(NotFoundException err){
+            Snackbar.make(textureView, "no QR code found!", Snackbar.LENGTH_SHORT).show();
+        }catch(ChecksumException err){
+            Snackbar.make(textureView, "a QR code was detected but something seemed off. please try again!", Snackbar.LENGTH_SHORT).show();
+        }catch(FormatException err){
+            Snackbar.make(textureView, "a QR code was detected but something seemed off. please try again!", Snackbar.LENGTH_SHORT).show();
+        }
+
+        try {
+            // reset
+            captureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
+            captureRequest = captureRequestBuilder.build();
+            MainActivity.this.captureSession.setRepeatingRequest(captureRequest, null, backgroundHandler);
         }catch(CameraAccessException err){
             err.printStackTrace();
         }
@@ -171,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "app has started. in onCreate...");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -208,7 +246,6 @@ public class MainActivity extends AppCompatActivity {
 
         // set up callback for camera state
         stateCallback = new CameraDevice.StateCallback(){
-            @RequiresApi(api = Build.VERSION_CODES.P)
             @Override
             public void onOpened(CameraDevice cameraDevice) {
                 // camera is on, start the session
@@ -229,41 +266,41 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        // add functionality for the button to decode a QR code, if present in the current image
+        // do the QR code capture/processing only when camera is focused
+        // we'll use this callback in the request to capture/process the QR code image on button press
+        captureCallback = new CaptureCallback() {
+            @Override
+            public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber){
+                //Log.i(TAG, "ON CAPTURE STARTED...");
+            }
+
+            @Override
+            public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult){
+                // this doesn't seem to be getting called at all :( at least on a Samsung Galaxy J3
+                // I think ideally we'd try to check if the camera is focused here and if so, call processImage().
+                //Log.i(TAG, "partial result control af state: " + partialResult.get(CaptureResult.CONTROL_AF_STATE));
+            }
+
+            @Override
+            public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                //Log.i(TAG, "result control af state: " + result.get(CaptureResult.CONTROL_AF_STATE));
+                processImage(); // the camera may not be focused when this is called but I think this is the best I can do atm. for the most part it still seems to work just fine for me.
+            }
+        };
+
         captureButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                // textureView is holding the current image
-                Bitmap currImage = textureView.getBitmap();
-                int imageWidth = currImage.getWidth();
-                int imageHeight = currImage.getHeight();
-                int[] currImagePixels = new int[imageWidth*imageHeight]; // each element represents a color (so it's not like each element represents a color channel)
-                currImage.getPixels(currImagePixels, 0, imageWidth, 0, 0, imageWidth, imageHeight);
+                try{
+                    MainActivity.this.captureSession.stopRepeating();
 
-                // zxing stuff
-                RGBLuminanceSource imgData = new RGBLuminanceSource(imageWidth, imageHeight, currImagePixels);
-                HybridBinarizer processedImg = new HybridBinarizer(imgData); // this class does some image processing to the image to make it easier to find the QR code, if present
-                BinaryBitmap imgBitmap = new BinaryBitmap(processedImg);
-                QRCodeReader reader = new QRCodeReader();
-                try {
-                    Result result = reader.decode(imgBitmap);
-                    String data = result.getText();
+                    // autofocus the camera
+                    captureRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+                    captureRequest = captureRequestBuilder.build(); // request needs to be rebuilt with new settings
 
-                    // present data
-                    //Log.i(TAG, data);
+                    MainActivity.this.captureSession.capture(captureRequest, captureCallback, backgroundHandler);
 
-                    // TODO: add an action to the Snackbar (i.e. option to open the link (need permission))
-                    Snackbar.make(textureView, data, Snackbar.LENGTH_SHORT).show();
-
-                }catch(NotFoundException err){
-                    // no QR code or barcode found
-                    // Log.i(TAG, "no qr code found");
-                    Snackbar.make(textureView, "no qr code found!", Snackbar.LENGTH_SHORT).show();
-
-                    //err.printStackTrace();
-                }catch(ChecksumException err){
-                    err.printStackTrace();
-                }catch(FormatException err){
+                }catch(CameraAccessException err){
                     err.printStackTrace();
                 }
             }
@@ -273,7 +310,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume(){
         // I think this happens if the phone comes back from sleeping
-        Log.i(TAG, "in onResume...");
         super.onResume();
         startBackgroundThread();
         if(textureView.isAvailable()){
