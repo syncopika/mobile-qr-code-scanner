@@ -5,12 +5,11 @@ screenshots (tested with a Samsung Galaxy J3 and <a href='https://demo.curlythem
 ![no capture screenshot](screenshots/Screenshot_20210613-170733.jpg)    
     
 upon QR code decoding:    
-![no capture screenshot](screenshots/Screenshot_20210613-170433.jpg)    
+![no capture screenshot](screenshots/Screenshot_20210919-134027.jpg)    
     
-It works ok and gets the job done I think for the most part. Sometimes it takes a couple tries to get results and also possibly because autofocusing isn't currently working quite the way I was hoping (I'm having difficulty capturing the image precisely when the camera is focused).    
+It works ok and gets the job done I think for the most part. Sometimes it takes a couple tries to get results because autofocusing isn't currently working quite the way I was hoping (I'm having difficulty capturing the image precisely when the camera is focused).    
     
 ## TODO:    
-- go to link when decoded from QR code?
 - change UI color (offer options?)
     
 ## acknowledgements:

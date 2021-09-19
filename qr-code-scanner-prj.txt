@@ -26,6 +26,8 @@ https://stackoverflow.com/questions/41649691/android-camera2-api-touch-to-focus-
 https://stackoverflow.com/questions/29947961/android-camera2-api-detect-when-we-have-focus
 https://github.com/googlearchive/android-Camera2Basic/blob/master/Application/src/main/java/com/example/android/camera2basic/Camera2BasicFragment.java
 https://stackoverflow.com/questions/33922670/camera2-api-autofocus-with-samsung-s5
+https://stackoverflow.com/questions/48032841/how-to-add-clickable-website-link-into-snackbar
+https://stackoverflow.com/questions/2378607/what-permission-do-i-need-to-access-internet-from-an-android-application/2378619
 
 https://github.com/zxing/zxing/tree/master/core/src/main/java/com/google/zxing/qrcode
 https://zxing.github.io/zxing/apidocs/
@@ -41,5 +43,4 @@ https://demo.curlythemes.com/qr/qr-codes-demo/
 TODO:
 - when turning the phone, how to correct view? might have to do with those LENS_xyz enums?
 - can we think of better UX? i.e. maybe a processing message after button click?
-- go to url if QR code is a url? (need permission)
 - for autofocus: only set autofocus when pressing the button to decode

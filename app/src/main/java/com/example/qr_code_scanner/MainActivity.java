@@ -16,6 +16,7 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.ChecksumException;
 import com.google.zxing.FormatException;
 
+import android.content.Intent;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Camera;
@@ -32,6 +33,7 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback;
 import android.hardware.camera2.CaptureRequest.Builder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -188,7 +190,13 @@ public class MainActivity extends AppCompatActivity {
             String data = qrCodeResult.getText();
 
             // TODO: add an action to the Snackbar (i.e. option to open the link (need permission))
-            Snackbar.make(textureView, data, Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(textureView, data, Snackbar.LENGTH_SHORT).setAction("Action", new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    Intent goToLink = new Intent(Intent.ACTION_VIEW, Uri.parse(data));
+                    startActivity(goToLink);
+                }
+            }).show();
 
         }catch(NotFoundException err){
             Snackbar.make(textureView, "no QR code found!", Snackbar.LENGTH_SHORT).show();
